@@ -1,0 +1,40 @@
+{
+  "description": "Sabnzbd running in 'Single App' mode via Brave Browser.",
+  "docker_registry": "https://index.docker.io/v1/",
+  "image_src": "https://sabnzbd.org/images/icons/sabnzbd.png",
+  "run_config": {
+    "hostname": "kasm-sabnzbd",
+    "shm_size": "512m"
+  },
+  "exec_config": {
+    "go": {
+      "cmd": "bash -c '/dockerstartup/kasm_default_profile.sh /dockerstartup/vnc_startup.sh /dockerstartup/kasm_startup_service.sh'"
+    },
+    "assign": {
+      "cmd": "bash -c '/dockerstartup/kasm_default_profile.sh /dockerstartup/vnc_startup.sh /dockerstartup/kasm_startup_service.sh'"
+    }
+  },
+  "categories": [
+    "Multimedia",
+    "Productivity"
+  ],
+  "friendly_name": "Sabnzbd",
+  "architecture": [
+    "amd64"
+  ],
+  "compatibility": [
+    {
+      "version": "1.16.x",
+      "image": "mkcfdc/kasm-sabnzbd-single:1.0",
+      "cores": 2,
+      "memory": 2048,
+      "gpu_count": 0,
+      "cpu_allocation_method": "Inherit",
+      "allow_network_selection": true,
+      "available_tags": [
+        "1.0",
+        "latest"
+      ]
+    }
+  ]
+}
