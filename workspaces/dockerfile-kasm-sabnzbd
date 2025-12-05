@@ -1,0 +1,77 @@
+ARG BASE_TAG="1.16.0"
+ARG BASE_IMAGE="core-ubuntu-jammy"
+FROM kasmweb/$BASE_IMAGE:$BASE_TAG
+
+USER root
+
+ENV HOME=/home/kasm-default-profile \
+    STARTUPDIR=/dockerstartup \
+    INST_SCRIPTS=/dockerstartup/install \
+    DEBIAN_FRONTEND=noninteractive
+
+WORKDIR $HOME
+
+### 1. Install Basics & Sabnzbd Dependencies
+RUN apt-get update && \
+    apt-get install -y \
+        software-properties-common \
+        curl \
+        wget \
+        gpg \
+        p7zip-full \
+        unrar \
+        par2 \
+        python3-pip \
+        # XFCE Tweaks for single app mode
+        xfce4-genmon-plugin \
+    && rm -rf /var/lib/apt/lists/*
+
+### 2. Install Sabnzbd
+RUN add-apt-repository multiverse && \
+    add-apt-repository ppa:jcfp/nobetas && \
+    add-apt-repository ppa:jcfp/sab-addons && \
+    apt-get update && \
+    apt-get install -y sabnzbdplus python3-sabyenc par2-tbb && \
+    rm -rf /var/lib/apt/lists/*
+
+### 3. Install Brave Browser
+# We need a browser to view the Sabnzbd interface inside the container
+RUN curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main"|tee /etc/apt/sources.list.d/brave-browser-release.list && \
+    apt-get update && \
+    apt-get install -y brave-browser && \
+    rm -rf /var/lib/apt/lists/*
+
+### 4. Configure "Single Application" Mode (Kiosk Feel)
+# This removes the XFCE panel (taskbar) so only the app is visible
+RUN apt-get remove -y xfce4-panel
+
+# Copy Kasm's default background (optional, strictly speaking, as browser will cover it)
+RUN cp /usr/share/backgrounds/bg_kasm.png /usr/share/backgrounds/bg_default.png
+
+### 5. Create the Custom Startup Script
+# This script runs when the container starts. 
+# It starts Sabnzbd in the background, then opens Brave to localhost:8080
+RUN echo "#!/bin/bash" > $STARTUPDIR/custom_startup.sh && \
+    echo "set -e" >> $STARTUPDIR/custom_startup.sh && \
+    echo "mkdir -p \$HOME/.config/sabnzbd" >> $STARTUPDIR/custom_startup.sh && \
+    echo "" >> $STARTUPDIR/custom_startup.sh && \
+    echo "# 1. Start Sabnzbd in the background" >> $STARTUPDIR/custom_startup.sh && \
+    echo "/usr/bin/sabnzbdplus --daemon --browser 0 --server 127.0.0.1:8080 --config-file \$HOME/.config/sabnzbd &" >> $STARTUPDIR/custom_startup.sh && \
+    echo "" >> $STARTUPDIR/custom_startup.sh && \
+    echo "# 2. Wait for Sabnzbd to initialize" >> $STARTUPDIR/custom_startup.sh && \
+    echo "sleep 5" >> $STARTUPDIR/custom_startup.sh && \
+    echo "" >> $STARTUPDIR/custom_startup.sh && \
+    echo "# 3. Launch Brave in Kiosk/App mode pointing to Sabnzbd" >> $STARTUPDIR/custom_startup.sh && \
+    echo "/usr/bin/brave-browser --no-sandbox --start-maximized --disable-gpu --app=http://127.0.0.1:8080" >> $STARTUPDIR/custom_startup.sh && \
+    chmod +x $STARTUPDIR/custom_startup.sh
+
+### 6. Permissions and User Cleanup
+RUN chown 1000:0 $HOME
+RUN $STARTUPDIR/set_user_permission.sh $HOME
+
+ENV HOME=/home/kasm-user
+WORKDIR $HOME
+RUN mkdir -p $HOME && chown -R 1000:0 $HOME
+
+USER 1000
