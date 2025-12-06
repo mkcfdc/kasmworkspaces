@@ -25,7 +25,7 @@
   "compatibility": [
     {
       "version": "1.16.x",
-      "image": "mkcfdc/kasm-sabnzbd-single:1.0",
+      "image": "mkcfdc/kasm-sabnzbd:latest",
       "cores": 2,
       "memory": 2048,
       "gpu_count": 0,
