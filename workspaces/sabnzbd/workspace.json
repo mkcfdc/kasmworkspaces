@@ -1,6 +1,6 @@
 {
   "description": "Sabnzbd running in 'Single App' mode via Brave Browser.",
-  "docker_registry": "https://index.docker.io/v1/",
+  "docker_registry": "https://ghcr.io",
   "image_src": "https://sabnzbd.org/images/icons/sabnzbd.png",
   "run_config": {
     "hostname": "kasm-sabnzbd",
