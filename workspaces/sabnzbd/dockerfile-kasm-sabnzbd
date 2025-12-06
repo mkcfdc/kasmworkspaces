@@ -15,6 +15,7 @@ ENV HOME=/home/kasm-default-profile \
 WORKDIR $HOME
 
 ### 1. Install Dependencies & Tools
+# Added 'jq' to the list so we can read the Kasm Launch Config JSON
 RUN apt-get update && \
     apt-get install -y \
         curl \
@@ -28,14 +29,14 @@ RUN apt-get update && \
         par2 \
         python3-pip \
         xfce4-genmon-plugin \
+        jq \
     && rm -rf /var/lib/apt/lists/*
 
 ### 2. Install Sabnzbd (Manual Method)
 # A. Enable Standard Repos
 RUN add-apt-repository -y multiverse && add-apt-repository -y universe
 
-# B. Import the JCFP PPA Key manually (FIXED)
-# We added quotes "..." and '&options=mr' to ensure we get the raw key, not HTML.
+# B. Import the JCFP PPA Key manually
 RUN mkdir -p /etc/apt/keyrings && \
     curl -fsSL "https://keyserver.ubuntu.com/pks/lookup?op=get&options=mr&search=0xF13930B14BB9F05F" | gpg --dearmor -o /etc/apt/keyrings/jcfp-sabnzbd.gpg
 
@@ -59,20 +60,13 @@ RUN curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://br
 RUN apt-get remove -y xfce4-panel && \
     cp /usr/share/backgrounds/bg_kasm.png /usr/share/backgrounds/bg_default.png
 
-### 5. Custom Startup Script
-RUN echo "#!/bin/bash" > $STARTUPDIR/custom_startup.sh && \
-    echo "set -e" >> $STARTUPDIR/custom_startup.sh && \
-    echo "mkdir -p \$HOME/.config/sabnzbd" >> $STARTUPDIR/custom_startup.sh && \
-    echo "" >> $STARTUPDIR/custom_startup.sh && \
-    echo "# 1. Start Sabnzbd in the background" >> $STARTUPDIR/custom_startup.sh && \
-    echo "/usr/bin/sabnzbdplus --daemon --browser 0 --server 127.0.0.1:8080 --config-file \$HOME/.config/sabnzbd &" >> $STARTUPDIR/custom_startup.sh && \
-    echo "" >> $STARTUPDIR/custom_startup.sh && \
-    echo "# 2. Wait for Sabnzbd to initialize" >> $STARTUPDIR/custom_startup.sh && \
-    echo "sleep 5" >> $STARTUPDIR/custom_startup.sh && \
-    echo "" >> $STARTUPDIR/custom_startup.sh && \
-    echo "# 3. Launch Brave in Kiosk/App mode pointing to Sabnzbd" >> $STARTUPDIR/custom_startup.sh && \
-    echo "/usr/bin/brave-browser --no-sandbox --start-maximized --disable-gpu --app=http://127.0.0.1:8080" >> $STARTUPDIR/custom_startup.sh && \
-    chmod +x $STARTUPDIR/custom_startup.sh
+### 5. Setup Custom Configuration & Startup
+# Copy the Sabnzbd Template (Must exist in your local folder)
+COPY sabnzbd.ini /etc/sabnzbd_template.ini
+
+# Copy the Startup Script (Must exist in your local folder)
+COPY custom_startup.sh $STARTUPDIR/custom_startup.sh
+RUN chmod +x $STARTUPDIR/custom_startup.sh
 
 ### 6. Final Permissions
 RUN chown 1000:0 $HOME
