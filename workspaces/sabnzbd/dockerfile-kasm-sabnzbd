@@ -4,55 +4,58 @@ FROM kasmweb/$BASE_IMAGE:$BASE_TAG
 
 USER root
 
+# 1. Set Environment correctly to prevent python encoding crashes
 ENV HOME=/home/kasm-default-profile \
     STARTUPDIR=/dockerstartup \
     INST_SCRIPTS=/dockerstartup/install \
-    DEBIAN_FRONTEND=noninteractive
+    DEBIAN_FRONTEND=noninteractive \
+    LC_ALL=C.UTF-8 \
+    LANG=C.UTF-8
 
 WORKDIR $HOME
 
-### 1. Install Basics & Sabnzbd Dependencies
+### 1. Install Basics & Tools required for PPAs
+# Added 'gnupg' and 'dirmngr' which are strictly required for add-apt-repository to fetch keys
 RUN apt-get update && \
     apt-get install -y \
         software-properties-common \
         curl \
         wget \
         gpg \
+        gnupg \
+        dirmngr \
         p7zip-full \
         unrar \
         par2 \
         python3-pip \
-        # XFCE Tweaks for single app mode
         xfce4-genmon-plugin \
     && rm -rf /var/lib/apt/lists/*
 
 ### 2. Install Sabnzbd
-RUN add-apt-repository -y multiverse && \
-    add-apt-repository -y universe && \
-    add-apt-repository -y ppa:jcfp/nobetas && \
-    add-apt-repository -y ppa:jcfp/sab-addons && \
-    apt-get update && \
+# We split these into separate RUN commands. 
+# This prevents one massive chain from failing ambiguously and ensures state is saved between steps.
+RUN add-apt-repository -y multiverse
+RUN add-apt-repository -y universe
+RUN add-apt-repository -y ppa:jcfp/nobetas
+RUN add-apt-repository -y ppa:jcfp/sab-addons
+
+# Now install the app
+RUN apt-get update && \
     apt-get install -y sabnzbdplus python3-sabyenc par2-tbb && \
     rm -rf /var/lib/apt/lists/*
 
 ### 3. Install Brave Browser
-# We need a browser to view the Sabnzbd interface inside the container
 RUN curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main"|tee /etc/apt/sources.list.d/brave-browser-release.list && \
     apt-get update && \
     apt-get install -y brave-browser && \
     rm -rf /var/lib/apt/lists/*
 
-### 4. Configure "Single Application" Mode (Kiosk Feel)
-# This removes the XFCE panel (taskbar) so only the app is visible
-RUN apt-get remove -y xfce4-panel
-
-# Copy Kasm's default background (optional, strictly speaking, as browser will cover it)
-RUN cp /usr/share/backgrounds/bg_kasm.png /usr/share/backgrounds/bg_default.png
+### 4. Configure "Single Application" Mode
+RUN apt-get remove -y xfce4-panel && \
+    cp /usr/share/backgrounds/bg_kasm.png /usr/share/backgrounds/bg_default.png
 
 ### 5. Create the Custom Startup Script
-# This script runs when the container starts. 
-# It starts Sabnzbd in the background, then opens Brave to localhost:8080
 RUN echo "#!/bin/bash" > $STARTUPDIR/custom_startup.sh && \
     echo "set -e" >> $STARTUPDIR/custom_startup.sh && \
     echo "mkdir -p \$HOME/.config/sabnzbd" >> $STARTUPDIR/custom_startup.sh && \
