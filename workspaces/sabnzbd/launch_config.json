@@ -1,0 +1,52 @@
+{
+  "file_mapping": {
+    "destination": "/tmp/launch_selections.json",
+    "is_readable": true,
+    "is_writeable": false,
+    "is_executable": false
+  },
+  "launch_form": [
+    {
+      "key": "sab_host",
+      "label": "Server Host",
+      "placeholder": "news.newshosting.com",
+      "value": "news.newshosting.com",
+      "input_type": "text",
+      "required": true,
+      "allow_saving": true,
+      "help": "The hostname of your Usenet provider.",
+      "options": [],
+      "validator_regex": null,
+      "validator_regex_description": null,
+      "display_if": null
+    },
+    {
+      "key": "sab_user",
+      "label": "Username",
+      "placeholder": "username",
+      "value": null,
+      "input_type": "text",
+      "required": true,
+      "allow_saving": true,
+      "help": "Your Usenet account username.",
+      "options": [],
+      "validator_regex": null,
+      "validator_regex_description": null,
+      "display_if": null
+    },
+    {
+      "key": "sab_password",
+      "label": "Password",
+      "placeholder": "password",
+      "value": null,
+      "input_type": "password",
+      "required": true,
+      "allow_saving": false,
+      "help": "Your Usenet account password.",
+      "options": [],
+      "validator_regex": null,
+      "validator_regex_description": null,
+      "display_if": null
+    }
+  ]
+}
