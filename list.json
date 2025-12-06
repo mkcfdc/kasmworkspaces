@@ -10,7 +10,7 @@
       "friendly_name": "Sabnzbd",
       "description": "Binary newsreader",
       "category": "Multimedia",
-      "file": "sabnzbd/workspace.json",  
+      "file": "workspaces/sabnzbd/workspace.json",  
       "image_src": "sabnzbd/sabnzbd.png", 
       "compatibility": [
         "1.18.x"
