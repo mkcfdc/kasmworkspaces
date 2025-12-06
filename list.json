@@ -1,0 +1,20 @@
+{
+  "zones": {
+    "default": {
+      "upstream_auth_address": "127.0.0.1"
+    }
+  },
+  "workspaces": [
+    {
+      "name": "sabnzbd",
+      "friendly_name": "Sabnzbd",
+      "description": "Binary newsreader",
+      "category": "Multimedia",
+      "file": "sabnzbd/workspace.json",  
+      "image_src": "sabnzbd/sabnzbd.png", 
+      "compatibility": [
+        "1.18.x"
+      ]
+    }
+  ]
+}
