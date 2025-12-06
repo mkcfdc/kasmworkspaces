@@ -46,4 +46,4 @@ fi
 sleep 5
 
 # Launch Brave
-/usr/bin/brave-browser --start-maximized --disable-gpu --app=http://127.0.0.1:8080
+/usr/bin/brave-browser --no-sandbox --start-maximized --disable-gpu --app=http://127.0.0.1:8080
