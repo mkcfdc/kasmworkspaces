@@ -5,8 +5,8 @@ on:
     branches: [ "main", "master" ]
     # Only build if the Dockerfile or workflow changes
     paths:
-      - 'workspaces/sabnzbd/dockerfile-kasm-sabnzbd'
       - '.github/workflows/**'
+      - 'workspaces/sabnzbd/**'
   # Allow running manually from the Actions tab
   workflow_dispatch:
 
