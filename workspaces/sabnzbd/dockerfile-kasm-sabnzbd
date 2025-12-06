@@ -27,9 +27,10 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 ### 2. Install Sabnzbd
-RUN add-apt-repository multiverse && \
-    add-apt-repository ppa:jcfp/nobetas && \
-    add-apt-repository ppa:jcfp/sab-addons && \
+RUN add-apt-repository -y multiverse && \
+    add-apt-repository -y universe && \
+    add-apt-repository -y ppa:jcfp/nobetas && \
+    add-apt-repository -y ppa:jcfp/sab-addons && \
     apt-get update && \
     apt-get install -y sabnzbdplus python3-sabyenc par2-tbb && \
     rm -rf /var/lib/apt/lists/*
