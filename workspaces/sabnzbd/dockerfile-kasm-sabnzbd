@@ -12,7 +12,7 @@ WORKDIR $HOME
 ######### Install SABnzbd ###########
 
 # Copy installer resources
-COPY ./src/ubuntu/install/sabnzbd $INST_SCRIPTS/sabnzbd/
+COPY ./install_sabnzbd.sh $INST_SCRIPTS/sabnzbd/
 
 # Run SABnzbd installer
 RUN bash $INST_SCRIPTS/sabnzbd/install_sabnzbd.sh && \
