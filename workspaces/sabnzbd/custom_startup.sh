@@ -1,49 +1,81 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -ex
 
-# Setup Config Directory
-mkdir -p $HOME/.config/sabnzbd
+START_COMMAND="/usr/bin/sabnzbdplus --config-file /home/kasm-user/.sabnzbd/sabnzbd.ini --browser 0"
+PGREP="sabnzbdplus"
+INI_PATH="/home/kasm-user/.sabnzbd/sabnzbd.ini"
+LAUNCH_CONF="/tmp/launch_selections.json"
 
-# --- Auto-Config Logic ---
-if [ ! -f "$HOME/.config/sabnzbd/sabnzbd.ini" ]; then
-    echo "No config found. Applying template..."
-    cp /etc/sabnzbd_template.ini $HOME/.config/sabnzbd/sabnzbd.ini
+DEFAULT_ARGS=""
+ARGS=${APP_ARGS:-$DEFAULT_ARGS}
 
-    # --- 1. Generate Random API Keys ---
-    # Sabnzbd needs 32-character hex strings. We use openssl or md5sum to make them.
-    NEW_API=$(date +%s%N | md5sum | head -c 32)
-    NEW_NZB=$(date +%s%N | md5sum | head -c 32)
-    
-    echo "Generated API Key: $NEW_API"
-    sed -i "s/__API_KEY__/$NEW_API/g" $HOME/.config/sabnzbd/sabnzbd.ini
-    sed -i "s/__NZB_KEY__/$NEW_NZB/g" $HOME/.config/sabnzbd/sabnzbd.ini
-
-    # --- 2. Inject User Secrets from Kasm ---
-    if [ -f "/tmp/launch_selections.json" ]; then
-        echo "Found launch config, reading secrets..."
-        
-        # Extract variables using jq
-        SAB_HOST=$(jq -r '.sab_host // empty' /tmp/launch_selections.json)
-        SAB_USER=$(jq -r '.sab_user // empty' /tmp/launch_selections.json)
-        SAB_PASS=$(jq -r '.sab_password // empty' /tmp/launch_selections.json)
-
-        if [ ! -z "$SAB_HOST" ]; then
-            sed -i "s/__SERVER_HOST__/$SAB_HOST/g" $HOME/.config/sabnzbd/sabnzbd.ini
-        fi
-        if [ ! -z "$SAB_USER" ]; then
-            sed -i "s/__SERVER_USER__/$SAB_USER/g" $HOME/.config/sabnzbd/sabnzbd.ini
-        fi
-        if [ ! -z "$SAB_PASS" ]; then
-            sed -i "s/__SERVER_PASSWORD__/$SAB_PASS/g" $HOME/.config/sabnzbd/sabnzbd.ini
-        fi
+process_launch_config() {
+    if [ ! -f "$LAUNCH_CONF" ]; then
+        echo "No launch selections file found."
+        return
     fi
+
+    sab_host=$(jq -r '.sab_host // empty' "$LAUNCH_CONF")
+    sab_user=$(jq -r '.sab_user // empty' "$LAUNCH_CONF")
+    sab_password=$(jq -r '.sab_password // empty' "$LAUNCH_CONF")
+
+    # Only patch if values exist
+    if [ -n "$sab_host" ]; then
+        sed -i "s|__SERVER_HOST__|$sab_host|g" "$INI_PATH"
+    fi
+    if [ -n "$sab_user" ]; then
+        sed -i "s|__SERVER_USER__|$sab_user|g" "$INI_PATH"
+    fi
+    if [ -n "$sab_password" ]; then
+        sed -i "s|__SERVER_PASSWORD__|$sab_password|g" "$INI_PATH"
+    fi
+
+    # Generate SAB-specific keys if still placeholders
+    if grep -q "__API_KEY__" "$INI_PATH"; then
+        sed -i "s|__API_KEY__|$(uuidgen)|g" "$INI_PATH"
+    fi
+    if grep -q "__NZB_KEY__" "$INI_PATH"; then
+        sed -i "s|__NZB_KEY__|$(uuidgen)|g" "$INI_PATH"
+    fi
+}
+
+kasm_startup() {
+    # Patch config file before startup
+    process_launch_config
+
+    echo "Starting SABnzbd loop"
+    set +x
+    while true; do
+        if ! pgrep -x "$PGREP" >/dev/null; then
+            /usr/bin/filter_ready
+            /usr/bin/desktop_ready
+            $START_COMMAND $ARGS
+        fi
+        sleep 1
+    done
+    set -x
+}
+
+kasm_exec() {
+    process_launch_config
+    /usr/bin/filter_ready
+    /usr/bin/desktop_ready
+    $START_COMMAND $ARGS
+}
+
+# Same parameter parsing as other Kasm images
+options=$(getopt -o ga -l go,assign -n "$0" -- "$@") || exit
+eval set -- "$options"
+while [[ $1 != -- ]]; do
+    case $1 in
+        -g|--go) GO='true'; shift;;
+        -a|--assign) ASSIGN='true'; shift;;
+    esac
+done
+shift
+
+if [[ -n "$GO" || -n "$ASSIGN" ]]; then
+    kasm_exec
+else
+    kasm_startup
 fi
-# -------------------------
-
-# Start Sabnzbd
-/usr/bin/sabnzbdplus --daemon --browser 0 --server 127.0.0.1:8080 --config-file $HOME/.config/sabnzbd &
-
-sleep 5
-
-# Launch Brave
-/usr/bin/brave-browser --no-sandbox --start-maximized --disable-gpu --app=http://127.0.0.1:8080
