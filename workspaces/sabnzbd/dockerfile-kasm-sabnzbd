@@ -4,15 +4,17 @@ FROM kasmweb/$BASE_IMAGE:$BASE_TAG
 
 USER root
 
-ENV HOME /home/kasm-default-profile
-ENV STARTUPDIR /dockerstartup
+ENV HOME=/home/kasm-default-profile
+ENV STARTUPDIR=/dockerstartup
 ENV INST_SCRIPTS=$STARTUPDIR/install
 WORKDIR $HOME
 
 ######### Install SABnzbd ###########
 
 # Copy only installer scripts (not the config)
+RUN mkdir -p $INST_SCRIPTS/sabnzbd
 COPY ./install_sabnzbd.sh $INST_SCRIPTS/sabnzbd/install_sabnzbd.sh
+RUN chmod +x $INST_SCRIPTS/sabnzbd/install_sabnzbd.sh
 
 # Copy config file somewhere permanent BEFORE installer dir is deleted
 COPY ./sabnzbd.ini $STARTUPDIR/sabnzbd.ini
@@ -38,7 +40,7 @@ RUN apt-get remove -y xfce4-panel
 
 RUN chown -R 1000:0 $HOME
 
-ENV HOME /home/kasm-user
+ENV HOME=/home/kasm-user
 WORKDIR $HOME
 
 RUN mkdir -p $HOME && \

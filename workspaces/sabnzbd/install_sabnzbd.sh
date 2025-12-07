@@ -9,9 +9,7 @@ apt-get update
 # Install SABnzbd and themes
 apt-get install -y \
     jq \
-    sabnzbdplus \
-    sabnzbdplus-theme-classic \
-    sabnzbdplus-theme-mobile
+    sabnzbdplus
 
 # Config directory for default profile (before switch to kasm-user)
 mkdir -p $HOME/.sabnzbd
