@@ -22,9 +22,9 @@ fi
 /usr/bin/desktop_ready
 
 # Start SABnzbd in background
-/usr/bin/sabnzbdplus --config-file "$INI_PATH" --browser 0 --server 0.0.0.0 --foreground &
+/usr/bin/sabnzbdplus --config-file "$INI_PATH" --browser 0 &
 
 sleep 5 # let SABnzbd start
 
 # Launch Brave in app mode pointing to SABnzbd
-exec brave --app=http://127.0.0.1:8080
+exec brave-browser --start-maximized http://127.0.0.1:8080
