@@ -8,6 +8,7 @@ apt-get update
 
 # Install SABnzbd and themes
 apt-get install -y \
+    jq \
     sabnzbdplus \
     sabnzbdplus-theme-classic \
     sabnzbdplus-theme-mobile
