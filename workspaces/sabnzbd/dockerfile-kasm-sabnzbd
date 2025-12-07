@@ -9,6 +9,10 @@ ENV STARTUPDIR /dockerstartup
 ENV INST_SCRIPTS=$STARTUPDIR/install
 WORKDIR $HOME
 
+RUN mkdir -p /home/kasm-default-profile/.sabnzbd
+COPY sabnzbd.ini /home/kasm-default-profile/.sabnzbd/sabnzbd.ini
+RUN chown -R 1000:0 /home/kasm-default-profile/.sabnzbd
+
 ######### Install SABnzbd ###########
 
 # Copy installer resources
