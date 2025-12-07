@@ -5,17 +5,33 @@ INI_PATH="/home/kasm-user/.sabnzbd/sabnzbd.ini"
 
 # Patch launch config if present
 LAUNCH_CONF="/tmp/launch_selections.json"
+
 if [ -f "$LAUNCH_CONF" ]; then
-    sab_host=$(jq -r '.sab_host // empty' "$LAUNCH_CONF")
-    sab_user=$(jq -r '.sab_user // empty' "$LAUNCH_CONF")
-    sab_password=$(jq -r '.sab_password // empty' "$LAUNCH_CONF")
+  sab_host=$(jq -r '.sab_host // empty' "$LAUNCH_CONF")
+  sab_user=$(jq -r '.sab_user // empty' "$LAUNCH_CONF")
+  sab_password=$(jq -r '.sab_password // empty' "$LAUNCH_CONF")
 
-    [[ -n "$sab_host" ]] && sed -i "s|__SERVER_HOST__|$sab_host|g" "$INI_PATH"
-    [[ -n "$sab_user" ]] && sed -i "s|__SERVER_USER__|$sab_user|g" "$INI_PATH"
-    [[ -n "$sab_password" ]] && sed -i "s|__SERVER_PASSWORD__|$sab_password|g" "$INI_PATH"
+  if [ -n "$sab_host" ]; then
+    sed -i "s|__SERVER_HOST__|$sab_host|g" "$INI_PATH"
+  fi
 
-    [[ $(grep -c "__API_KEY__" "$INI_PATH") -gt 0 ]] && sed -i "s|__API_KEY__|$(uuidgen)|g" "$INI_PATH"
-    [[ $(grep -c "__NZB_KEY__" "$INI_PATH") -gt 0 ]] && sed -i "s|__NZB_KEY__|$(uuidgen)|g" "$INI_PATH"
+  if [ -n "$sab_user" ]; then
+    sed -i "s|__SERVER_USER__|$sab_user|g" "$INI_PATH"
+  fi
+
+  if [ -n "$sab_password" ]; then
+    sed -i "s|__SERVER_PASSWORD__|$sab_password|g" "$INI_PATH"
+  fi
+
+  if grep -q "__API_KEY__" "$INI_PATH"; then
+    API_KEY=$(openssl rand -hex 32)
+    sed -i "s|__API_KEY__|$API_KEY|g" "$INI_PATH"
+  fi
+
+  if grep -q "__NZB_KEY__" "$INI_PATH"; then
+    NZB_KEY=$(openssl rand -hex 32)
+    sed -i "s|__NZB_KEY__|$NZB_KEY|g" "$INI_PATH"
+  fi
 fi
 
 /usr/bin/filter_ready

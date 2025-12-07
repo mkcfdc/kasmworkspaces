@@ -2,7 +2,7 @@
 set -ex
 
 apt-get update
-apt-get install -y sabnzbdplus jq
+apt-get install -y sabnzbdplus jq openssl
 
 mkdir -p $HOME/.sabnzbd
 
@@ -17,7 +17,7 @@ cat <<EOF > /usr/share/applications/sabnzbd.desktop
 Version=1.0
 Type=Application
 Name=SABnzbd
-Exec=exec brave --app=http://127.0.0.1:8080"
+Exec=exec brave-browser http://127.0.0.1:8080
 Icon=sabnzbd
 Terminal=false
 Categories=Network;
