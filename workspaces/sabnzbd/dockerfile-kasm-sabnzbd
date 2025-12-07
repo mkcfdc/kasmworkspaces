@@ -56,4 +56,3 @@ RUN if [ -f /home/kasm-default-profile/.sabnzbd/sabnzbd.ini ]; then \
     fi
 
 USER 1000
-CMD ["--tail-log"]
