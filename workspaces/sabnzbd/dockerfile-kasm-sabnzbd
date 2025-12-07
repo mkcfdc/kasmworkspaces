@@ -1,4 +1,4 @@
-ARG BASE_TAG="develop"
+ARG BASE_TAG="1.18.0-rolling-daily"
 ARG BASE_IMAGE="core-ubuntu-jammy"
 FROM kasmweb/$BASE_IMAGE:$BASE_TAG
 
@@ -56,3 +56,4 @@ RUN if [ -f /home/kasm-default-profile/.sabnzbd/sabnzbd.ini ]; then \
     fi
 
 USER 1000
+CMD ["--tail-log"]
