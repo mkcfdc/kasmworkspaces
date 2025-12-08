@@ -6,5 +6,4 @@ wsgidav \
   --port=8090 \
   --root="$DL_DIR" \
   --auth=anonymous \
-  --dir_browser.on=true \
   &
