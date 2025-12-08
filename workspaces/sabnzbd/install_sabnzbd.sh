@@ -14,7 +14,4 @@ if [ -f /dockerstartup/install/sabnzbd/sabnzbd.ini ]; then
     cp /dockerstartup/install/sabnzbd/sabnzbd.ini $HOME/.sabnzbd/sabnzbd.ini
 fi
 
-cp /usr/share/applications/sabnzbd.desktop $HOME/Desktop/
-chmod +x $HOME/Desktop/sabnzbd.desktop
-
 chown -R 1000:0 $HOME
