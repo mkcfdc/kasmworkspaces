@@ -22,6 +22,10 @@ COPY ./install_sabnzbd.sh $INST_SCRIPTS/sabnzbd/
 RUN bash $INST_SCRIPTS/sabnzbd/install_sabnzbd.sh && \
     rm -rf $INST_SCRIPTS/sabnzbd/
 
+# Start the webdav
+COPY ./start_webdav.sh $STARTUPDIR/start_webdav.sh
+RUN chmod +x $STARTUPDIR/start_webdav.sh
+
 # Install custom startup script
 COPY ./custom_startup.sh $STARTUPDIR/custom_startup.sh
 RUN chmod 755 $STARTUPDIR/custom_startup.sh

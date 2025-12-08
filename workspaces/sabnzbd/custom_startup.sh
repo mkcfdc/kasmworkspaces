@@ -39,8 +39,9 @@ fi
 
 # Start SABnzbd in background
 /usr/bin/sabnzbdplus --config-file "$INI_PATH" --browser 0 &
+/dockerstartup/start_webdav.sh
 
 sleep 5 # let SABnzbd start
 
 # Launch Brave in app mode pointing to SABnzbd
-exec brave-browser --start-maximized http://127.0.0.1:8080
+exec brave-browser --start-maximized http://127.0.0.1:8080 https://nzbgeek.info
